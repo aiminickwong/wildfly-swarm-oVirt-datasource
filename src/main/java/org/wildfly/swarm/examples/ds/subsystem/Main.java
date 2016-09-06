@@ -5,14 +5,6 @@ import org.wildfly.swarm.Swarm;
 import org.wildfly.swarm.datasources.DatasourcesFraction;
 import org.wildfly.swarm.jaxrs.JAXRSArchive;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-/**
- * @author Bob McWhirter
- */
 public class Main {
 
     static String driverModule;
@@ -26,21 +18,13 @@ public class Main {
         // Configure the Datasources subsystem with a driver
         // and a datasource
         switch (useDB.toLowerCase()) {
-            case "h2":
-                swarm.fraction(datasourceWithH2());
-                driverModule = "com.h2database.h2";
-                break;
             case "postgresql" :
                 swarm.fraction(datasourceWithPostgresql());
                 driverModule = "org.postgresql";
                 break;
-            case "mysql" :
-                swarm.fraction(datasourceWithMysql());
-                driverModule = "com.mysql";
-                break;
            default:
-                swarm.fraction(datasourceWithH2());
-                driverModule = "com.h2database.h2";
+                swarm.fraction(datasourceWithPostgresql());
+                driverModule = "org.postgresql";
         }
 
         // Start the swarm
@@ -52,21 +36,6 @@ public class Main {
         // Deploy your app
         swarm.deploy(appDeployment);
 
-    }
-
-    private static DatasourcesFraction datasourceWithH2() {
-        return new DatasourcesFraction()
-                .jdbcDriver("h2", (d) -> {
-                    d.driverClassName("org.h2.Driver");
-                    d.xaDatasourceClass("org.h2.jdbcx.JdbcDataSource");
-                    d.driverModuleName("com.h2database.h2");
-                })
-                .dataSource("ExampleDS", (ds) -> {
-                    ds.driverName("h2");
-                    ds.connectionUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
-                    ds.userName("sa");
-                    ds.password("sa");
-                });
     }
 
     private static DatasourcesFraction datasourceWithPostgresql() {
@@ -81,21 +50,6 @@ public class Main {
                     ds.connectionUrl("jdbc:postgresql://localhost:5432/engine");
                     ds.userName("engine");
                     ds.password("redhat");
-                });
-    }
-
-    private static DatasourcesFraction datasourceWithMysql() {
-        return new DatasourcesFraction()
-                .jdbcDriver("com.mysql", (d) -> {
-                    d.driverClassName("com.mysql.jdbc.Driver");
-                    d.xaDatasourceClass("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-                    d.driverModuleName("com.mysql");
-                })
-                .dataSource("ExampleDS", (ds) -> {
-                    ds.driverName("com.mysql");
-                    ds.connectionUrl("jdbc:mysql://localhost:3306/mysql");
-                    ds.userName("root");
-                    ds.password("root");
                 });
     }
 }
