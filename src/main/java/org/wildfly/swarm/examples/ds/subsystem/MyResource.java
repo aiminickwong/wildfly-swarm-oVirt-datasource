@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -13,9 +15,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-/**
- * @author Bob McWhirter
- */
 @Path("/")
 public class MyResource {
 
@@ -27,13 +26,13 @@ public class MyResource {
         Connection conn = ds.getConnection();
         try {
             String query = "SELECT * FROM vms";
-            String vmName = "";
+            List<String> vmNames = new ArrayList<>();
             try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(query);
                 while (rs.next()) {
-                    vmName = rs.getString("vm_name");
-                    return "Howdy using connection: " + conn + " VM name is : " + vmName;
+                    vmNames.add(rs.getString("vm_name"));
                 }
+                return "Using connection: " + conn + "\n The VM names are: " + vmNames.toString();
             } catch (SQLException e) {
             }
         } finally {
